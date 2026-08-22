@@ -1,1 +1,357 @@
-Hello World
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">  <title>Anjali Pullabhotla</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #ebebeb;
+      color: #111;
+      font-family: Arial, Helvetica, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+      gap: 1.2rem;
+    }
+
+    h1 { 
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 2rem; 
+      font-weight: 700;
+      letter-spacing: -.02em; 
+      color: #111;
+    }
+
+    .subtitle {
+      font-size: .85rem;
+      color: #666;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 500;
+      letter-spacing: .05em;    
+    }
+
+    .progress {
+      display: flex;
+      gap: .6rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .badge {
+      padding: 3px 12px;
+      border-radius: 99px;
+      border: 1px solid #aaa;
+      color: #777;
+      font-size: .75rem;
+      letter-spacing: .07em;
+      transition: all .4s;
+    }
+
+    .badge.found { border-color: #4ade80; color: #4ade80; background: rgba(74,222,128,.07); }
+
+    /* ── Board: 3 cols on desktop, 2 on mobile ── */
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      width: min(920px, 100%);
+    }
+
+    @media (max-width: 520px) {
+      .board { grid-template-columns: repeat(2, 1fr); gap: 7px; }
+      h1 { font-size: 1.3rem; }
+      body { padding: 1.2rem .7rem; gap: .9rem; }
+    }
+
+    /* ── Card: landscape, tall shapes in a row ── */
+    .card {
+      background: #ffffff;
+      border: 2px solid #555;
+      border-radius: 14px;
+      aspect-ratio: 5/2;
+      cursor: pointer;
+      display: flex;
+      flex-direction: row;
+      align-items: stretch;
+      justify-content: center;
+      gap: 3%;
+      padding: 8% 10%;
+      transition: border-color .12s, transform .12s, box-shadow .12s;
+      user-select: none;
+      touch-action: manipulation;
+      position: relative;
+    }
+
+    .card:hover  { border-color: #111; transform: translateY(-2px); }
+
+    .card.selected {
+      border-color: #ffe066;
+      box-shadow: 0 0 0 2px rgba(255,224,102,.35);
+      transform: translateY(-2px);
+    }
+
+    .card.wrong { animation: shake .35s ease; }
+
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      20%,60%  { transform: translateX(-6px); }
+      40%,80%  { transform: translateX(6px); }
+    }
+
+    /* Each shape slot stretches to card height; SVG scales from height */
+    .shape-slot {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .shape-slot svg {
+      height: 100%;
+      width: auto;
+      display: block;
+    }
+
+    .badge.found { cursor: pointer; }
+    .badge.found:hover { background: rgba(74,222,128,.18); }
+
+    /* ── Modal ── */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.75);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      padding: 1rem;
+      animation: fadein .18s;
+    }
+    .overlay.hidden { display: none; }
+
+    @keyframes fadein { from { opacity:0 } to { opacity:1 } }
+
+    .modal {
+      background: #ffffff;
+      border: 2px solid #555;
+      border-radius: 18px;
+      max-width: 560px;
+      width: 100%;
+      padding: 2rem 2rem 1.8rem;
+      position: relative;
+      animation: slideup .2s ease;
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+
+    @keyframes slideup {
+      from { transform: translateY(16px); opacity:0 }
+      to   { transform: translateY(0);    opacity:1 }
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 14px; right: 18px;
+      background: none; border: none;
+      color: #999; font-size: 1.4rem;
+      line-height: 1; cursor: pointer;
+    }
+    .modal-close:hover { color: #111; }
+
+    .modal h2 { font-size: 1.35rem; margin-bottom: .8rem; color: #111; }
+    .modal p, .modal li { color: #333; line-height: 1.8; font-size: .93rem; }
+    .modal ul { padding-left: 1.3rem; margin-top: .4rem; }
+    .modal li { margin-bottom: .35rem; }
+    .placeholder { color: #bbb; font-style: italic; }
+  </style>
+</head>
+<body>
+
+<h1>Anjali Pullabhotla</h1>
+
+<div class="progress">
+  <span class="badge" id="badge-about"      onclick="reopen('about')">ABOUT ME</span>
+  <span class="badge" id="badge-experience" onclick="reopen('experience')">EXPERIENCE</span>
+  <span class="badge" id="badge-projects"   onclick="reopen('projects')">PROJECTS</span>
+  <span class="badge" id="badge-hobbies"    onclick="reopen('hobbies')">HOBBIES</span>
+  <span class="badge" id="badge-links"      onclick="reopen('links')">LINKS</span>
+  <span class="badge" id="badge-contact"    onclick="reopen('contact')">CONTACT</span>
+</div>
+
+<div class="board" id="board"></div>
+
+<div class="overlay hidden" id="overlay" onclick="overlayClick(event)">
+  <div class="modal" id="modal">
+    <button class="modal-close" onclick="closeModal()">&#x2715;</button>
+    <div id="modal-content"></div>
+  </div>
+</div>
+
+<script>
+// ── 12 cards ───────────────────────────────────────────────────────────
+const CARDS = [
+  { n:1, color:'red',    shape:'oval',     fill:'solid'   },  // 0
+  { n:3, color:'purple', shape:'squiggle', fill:'solid'   },  // 1
+  { n:2, color:'green',  shape:'diamond',  fill:'solid'   },  // 2
+  { n:1, color:'purple', shape:'oval',     fill:'solid'   },  // 3
+  { n:3, color:'purple', shape:'squiggle', fill:'striped' },  // 4
+  { n:1, color:'purple', shape:'squiggle', fill:'striped' },  // 5
+  { n:2, color:'purple', shape:'squiggle', fill:'striped' },  // 6
+  { n:3, color:'purple', shape:'squiggle', fill:'open'    },  // 7
+  { n:2, color:'purple', shape:'squiggle', fill:'solid'   },  // 8
+  { n:3, color:'green',  shape:'squiggle', fill:'solid'   },  // 9
+  { n:3, color:'red',    shape:'oval',     fill:'striped' },  // 10
+  { n:2, color:'red',    shape:'oval',     fill:'open'    },  // 11
+];
+
+// Six valid SETs
+// About Me   [0,1,2]:   n=1,3,2 | red,purple,green | oval,sqg,dmd   | solid×3          ✓
+// Experience [4,5,6]:   n=3,1,2 | purple×3         | squiggle×3     | striped×3         ✓
+// Projects   [5,7,8]:   n=1,3,2 | purple×3         | squiggle×3     | striped,open,solid ✓
+// Hobbies    [2,6,11]:  n=2×3   | green,purple,red | dmd,sqg,oval   | solid,striped,open ✓
+// Links      [0,10,11]: n=1,3,2 | red×3            | oval×3         | solid,striped,open ✓
+// Contact    [1,4,7]:   n=3×3   | purple×3         | squiggle×3     | solid,striped,open ✓
+const SETS = [
+  { key:'about',      indices:[0,1,2]   },
+  { key:'experience', indices:[4,5,6]   },
+  { key:'projects',   indices:[5,7,8]   },
+  { key:'hobbies',    indices:[2,6,11]  },
+  { key:'links',      indices:[0,10,11] },
+  { key:'contact',    indices:[1,4,7]   },
+];
+
+const CONTENT = {
+  about:      { title:'About Me',    html:'<p class="placeholder">[ Your content goes here ]</p>' },
+  experience: { title:'Experience',  html:'<p class="placeholder">[ Your content goes here ]</p>' },
+  projects:   { title:'Projects',    html:'<p class="placeholder">[ Your content goes here ]</p>' },
+  hobbies:    { title:'Hobbies',     html:'<p class="placeholder">[ Your content goes here ]</p>' },
+  links:      { title:'Links',       html:'<p class="placeholder">[ Your content goes here ]</p>' },
+  contact:    { title:'Contact',     html:'<p class="placeholder">[ Your content goes here ]</p>' },
+};
+
+// ── Colors ─────────────────────────────────────────────────────────────
+const CLR = { red:'#e03040', green:'#27ae66', purple:'#8b2fc9' };
+
+// ── Shape paths (viewBox 0 0 96 48) ────────────────────────────────────
+const SQUIGGLE = `M 54.7,86.8 C 32.9,94.0 8.9,74.5 15.7,51.6 C 18.5,42.3 27.9,33.7 16.8,20.7 C 4.2,5.7 11.5,2.2 29.8,2.0 C 47.9,1.6 60.2,13.9 57.9,28.4 C 54.6,48.3 38.4,50.6 55.9,73.9 C 59.7,79.3 63.0,84.1 54.7,86.8 Z`;
+const OVAL = `M 2,24 C 2,11.85 11.85,2 24,2 C 36.15,2 46,11.85 46,24 L 46,72 C 46,84.15 36.15,94 24,94 C 11.85,94 2,84.15 2,72 Z`;
+const DIAMOND = `M 24,2 L 48,48 L 24,94 L 0,48 Z`;
+
+function getPath(shape) {
+  if (shape === 'oval')    return OVAL;
+  if (shape === 'diamond') return DIAMOND;
+  return SQUIGGLE;
+}
+
+let uid = 0;
+
+function shapeSVG(card) {
+  const id = `s${uid++}`;
+  const c  = CLR[card.color];
+  const d  = getPath(card.shape);
+  const sw = 2.5;
+
+  if (card.fill === 'solid') {
+    return `<svg viewBox="0 0 67 96" xmlns="http://www.w3.org/2000/svg">
+      <path d="${d}" fill="${c}" stroke="${c}" stroke-width="1" stroke-linejoin="round"/>
+    </svg>`;
+  }
+  if (card.fill === 'open') {
+    return `<svg viewBox="0 0 67 96" xmlns="http://www.w3.org/2000/svg">
+      <path d="${d}" fill="none" stroke="${c}" stroke-width="${sw}" stroke-linejoin="round"/>
+    </svg>`;
+  }
+  return `<svg viewBox="0 0 67 96" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <pattern id="p${id}" patternUnits="userSpaceOnUse" width="5" height="5">
+        <line x1="0" y1="0" x2="0" y2="5" stroke="${c}" stroke-width="2.2"/>
+      </pattern>
+      <clipPath id="c${id}"><path d="${d}"/></clipPath>
+    </defs>
+    <g clip-path="url(#c${id})"><rect width="67" height="96" fill="url(#p${id})"/></g>
+    <path d="${d}" fill="none" stroke="${c}" stroke-width="${sw}" stroke-linejoin="round"/>
+  </svg>`;
+}
+
+function cardHTML(card, idx) {
+  const slots = Array.from({length: card.n}, () =>
+    `<div class="shape-slot">${shapeSVG(card)}</div>`
+  ).join('');
+  return `<div class="card" id="c${idx}" onclick="toggle(${idx})">${slots}</div>`;
+}
+
+document.getElementById('board').innerHTML = CARDS.map(cardHTML).join('');
+
+// ── Game state ─────────────────────────────────────────────────────────
+const selected      = new Set();
+const foundSections = new Set();
+
+function toggle(idx) {
+  const el = document.getElementById('c' + idx);
+  if (selected.has(idx)) {
+    selected.delete(idx);
+    el.classList.remove('selected');
+  } else {
+    if (selected.size >= 3) return;
+    selected.add(idx);
+    el.classList.add('selected');
+    if (selected.size === 3) setTimeout(evaluate, 80);
+  }
+}
+
+function evaluate() {
+  const sel = [...selected].sort((a,b) => a-b);
+
+  for (const set of SETS) {
+    const sorted = [...set.indices].sort((a,b) => a-b);
+    if (sel.join() === sorted.join()) {
+      clearSelection();
+      if (!foundSections.has(set.key)) {
+        foundSections.add(set.key);
+        document.getElementById('badge-' + set.key).classList.add('found');
+      }
+      showModal(set.key);
+      return;
+    }
+  }
+
+  selected.forEach(i => {
+    const el = document.getElementById('c'+i);
+    el.classList.add('wrong');
+    setTimeout(() => el.classList.remove('wrong'), 350);
+  });
+  setTimeout(clearSelection, 360);
+}
+
+function clearSelection() {
+  selected.forEach(i => document.getElementById('c'+i).classList.remove('selected'));
+  selected.clear();
+}
+
+function showModal(key) {
+  const {title, html} = CONTENT[key];
+  document.getElementById('modal-content').innerHTML = `<h2>${title}</h2>${html}`;
+  document.getElementById('overlay').classList.remove('hidden');
+}
+
+function closeModal() {
+  document.getElementById('overlay').classList.add('hidden');
+}
+
+function overlayClick(e) {
+  if (e.target === document.getElementById('overlay')) closeModal();
+}
+
+function reopen(key) {
+  if (foundSections.has(key)) showModal(key);
+}
+</script>
+</body>
+</html>
