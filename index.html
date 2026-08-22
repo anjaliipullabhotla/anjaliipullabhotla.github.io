@@ -9,19 +9,30 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    html, body {
+      width: 100%;
+      overflow-x: hidden;
+    }
+
     body {
       background: #ebebeb;
       color: #111;
       font-family: Arial, Helvetica, sans-serif;
       min-height: 100vh;
+      margin: 0;
+    }
+
+    .page {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      padding: 2rem 1rem;
       gap: 1.2rem;
     }
 
-    h1 { 
+    h1 {
+      text-align: center;
       font-family: 'Space Grotesk', sans-serif;
       font-size: 2rem; 
       font-weight: 700;
@@ -30,6 +41,7 @@
     }
 
     .subtitle {
+      text-align: center;
       font-size: .85rem;
       color: #666;
       font-family: 'Space Grotesk', sans-serif;
@@ -61,16 +73,9 @@
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 12px;
-      width: min(920px, 100%);
+      width: 100%;
     }
 
-    @media (max-width: 520px) {
-      .board { grid-template-columns: repeat(2, 1fr); gap: 7px; }
-      h1 { font-size: 1.3rem; }
-      body { padding: 1.2rem .7rem; gap: .9rem; }
-    }
-
-    /* ── Card: landscape, tall shapes in a row ── */
     .card {
       background: #ffffff;
       border: 2px solid #555;
@@ -79,7 +84,7 @@
       cursor: pointer;
       display: flex;
       flex-direction: row;
-      align-items: stretch;
+      align-items: center;
       justify-content: center;
       gap: 3%;
       padding: 8% 10%;
@@ -105,8 +110,9 @@
       40%,80%  { transform: translateX(6px); }
     }
 
-    /* Each shape slot stretches to card height; SVG scales from height */
+    /* Width-based sizing is reliable cross-browser; height auto-scales from viewBox ratio */
     .shape-slot {
+      width: 20%;
       flex-shrink: 0;
       display: flex;
       align-items: center;
@@ -114,8 +120,8 @@
     }
 
     .shape-slot svg {
-      height: 100%;
-      width: auto;
+      width: 100%;
+      height: auto;
       display: block;
     }
 
@@ -170,9 +176,17 @@
     .modal ul { padding-left: 1.3rem; margin-top: .4rem; }
     .modal li { margin-bottom: .35rem; }
     .placeholder { color: #bbb; font-style: italic; }
+
+    @media (max-width: 520px) {
+      .page { padding: 1rem; gap: .9rem; }
+      .board { gap: 6px; }
+      .card { padding: 6% 7%; gap: 2%; border: 1px solid #555; }
+      h1 { font-size: 1.3rem; }
+    }
   </style>
 </head>
 <body>
+<div class="page">
 
 <h1>Anjali Pullabhotla</h1>
 
@@ -187,6 +201,8 @@
 
 <div class="board" id="board"></div>
 
+</div>
+
 <div class="overlay hidden" id="overlay" onclick="overlayClick(event)">
   <div class="modal" id="modal">
     <button class="modal-close" onclick="closeModal()">&#x2715;</button>
@@ -195,29 +211,21 @@
 </div>
 
 <script>
-// ── 12 cards ───────────────────────────────────────────────────────────
 const CARDS = [
-  { n:1, color:'red',    shape:'oval',     fill:'solid'   },  // 0
-  { n:3, color:'purple', shape:'squiggle', fill:'solid'   },  // 1
-  { n:2, color:'green',  shape:'diamond',  fill:'solid'   },  // 2
-  { n:1, color:'purple', shape:'oval',     fill:'solid'   },  // 3
-  { n:3, color:'purple', shape:'squiggle', fill:'striped' },  // 4
-  { n:1, color:'purple', shape:'squiggle', fill:'striped' },  // 5
-  { n:2, color:'purple', shape:'squiggle', fill:'striped' },  // 6
-  { n:3, color:'purple', shape:'squiggle', fill:'open'    },  // 7
-  { n:2, color:'purple', shape:'squiggle', fill:'solid'   },  // 8
-  { n:3, color:'green',  shape:'squiggle', fill:'solid'   },  // 9
-  { n:3, color:'red',    shape:'oval',     fill:'striped' },  // 10
-  { n:2, color:'red',    shape:'oval',     fill:'open'    },  // 11
+  { n:1, color:'red',    shape:'oval',     fill:'solid'   },  
+  { n:3, color:'purple', shape:'squiggle', fill:'solid'   },  
+  { n:2, color:'green',  shape:'diamond',  fill:'solid'   },  
+  { n:1, color:'purple', shape:'oval',     fill:'solid'   },  
+  { n:3, color:'purple', shape:'squiggle', fill:'striped' }, 
+  { n:1, color:'purple', shape:'squiggle', fill:'striped' },  
+  { n:2, color:'purple', shape:'squiggle', fill:'striped' },  
+  { n:3, color:'purple', shape:'squiggle', fill:'open'    },  
+  { n:2, color:'purple', shape:'squiggle', fill:'solid'   },  
+  { n:3, color:'green',  shape:'squiggle', fill:'solid'   },  
+  { n:3, color:'red',    shape:'oval',     fill:'striped' },  
+  { n:2, color:'red',    shape:'oval',     fill:'open'    },  
 ];
 
-// Six valid SETs
-// About Me   [0,1,2]:   n=1,3,2 | red,purple,green | oval,sqg,dmd   | solid×3          ✓
-// Experience [4,5,6]:   n=3,1,2 | purple×3         | squiggle×3     | striped×3         ✓
-// Projects   [5,7,8]:   n=1,3,2 | purple×3         | squiggle×3     | striped,open,solid ✓
-// Hobbies    [2,6,11]:  n=2×3   | green,purple,red | dmd,sqg,oval   | solid,striped,open ✓
-// Links      [0,10,11]: n=1,3,2 | red×3            | oval×3         | solid,striped,open ✓
-// Contact    [1,4,7]:   n=3×3   | purple×3         | squiggle×3     | solid,striped,open ✓
 const SETS = [
   { key:'about',      indices:[0,1,2]   },
   { key:'experience', indices:[4,5,6]   },
@@ -236,7 +244,6 @@ const CONTENT = {
   contact:    { title:'Contact',     html:'<p class="placeholder">[ Your content goes here ]</p>' },
 };
 
-// ── Colors ─────────────────────────────────────────────────────────────
 const CLR = { red:'#e03040', green:'#27ae66', purple:'#8b2fc9' };
 
 // ── Shape paths (viewBox 0 0 96 48) ────────────────────────────────────
