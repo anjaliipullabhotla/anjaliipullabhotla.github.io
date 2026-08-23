@@ -171,7 +171,9 @@
     }
     .modal-close:hover { color: #111; }
 
-    .modal h2 { font-size: 1.35rem; margin-bottom: .8rem; color: #111; }
+    .modal h2 { font-size: 1.35rem; margin-bottom: .8rem; color: #111; font-family: 'Space Grotesk', sans-serif; font-style: italic; }
+    .modal h3 { font-size: .72rem; font-family: 'Space Grotesk', sans-serif; letter-spacing: .09em; color: #aaa; text-transform: uppercase; margin: 1.1rem 0 .25rem; }
+    .modal a { color: #999; }
     .modal p, .modal li { color: #333; line-height: 1.8; font-size: .93rem; }
     .modal ul { padding-left: 1.3rem; margin-top: .4rem; }
     .modal li { margin-bottom: .35rem; }
@@ -189,6 +191,7 @@
 <div class="page">
 
 <h1>Anjali Pullabhotla</h1>
+<p class="subtitle">Find a SET and unlock a tab.</p>
 
 <div class="progress">
   <span class="badge" id="badge-about"      onclick="reopen('about')">ABOUT ME</span>
@@ -237,13 +240,35 @@ const SETS = [
   { key:'contact',    indices:[1,4,7]   },
 ];
 
+const ABOUT_ME = '<p>Hi! I\'m Anjali. Currently, I\'m a software engineer in NYC at Two Sigma where I create and maintain infrastructure for our data pipelines. In my free time, I enjoy grating cheese, running along the Brooklyn piers, and playing <i>SET!</i>, of course :)</p>'
+const EXPERIENCE = '<p>I studied Mathematics and Computer Science at the University of Chicago, and now take courses at Columbia at the School of Professional Studies. Previously, I interned at Fiserv, Amazon, and Two Sigma, before returning to the latter full-time.</p>'
+const PROJECTS = '<p>My projects are available on <a href=https://github.com/anjaliipullabhotla>GitHub</a>.<p>'
+const HOBBIES = '<p>In my free time, I love to run (I am trying to complete <a href=https://www.nyrr.org/run/guaranteed-entry/tcs-new-york-city-marathon-9plus1-program>9+1</a> this year to run the 2027 NYC Marathon), <a href=https://www.goodreads.com/user/show/140535800-anjali-pullabhotla>read</a>, and cook/eat cheesy things.'
+const LINKS = `
+  <h3>Articles</h3>
+  <ul>
+    <li><a href="https://www.theatlantic.com/magazine/2026/04/online-sports-betting-app-addiction/686061/" target="_blank" rel="noopener">Sucker: My Year as a Degenerate Gambler</a> — The Atlantic</li>
+    <li><a href="https://pudding.cool/2020/07/gendered-descriptions/" target="_blank" rel="noopener">The Physical Traits that Define Men and Women in Literature</a> — The Pudding</li>
+    <li><a href="https://worksinprogress.co/" target="_blank" rel="noopener">Works in Progress</a></li>
+    <li><a href="https://www.reddit.com/r/longform/" target="_blank" rel="noopener">r/longform</a></li>
+  </ul>
+  <h3>Podcasts</h3>
+  <ul>
+    <li><a href="https://www.thisamericanlife.org/801/must-be-rats-on-the-brain" target="_blank" rel="noopener">Must Be Rats on the Brain</a> — This American Life</li>
+  </ul>
+  <h3>Music</h3>
+  <ul>
+    <li><a href="https://open.spotify.com/playlist/2FUYEjBGFG7fqkniprcWYe?si=370b36434ac44321" target="_blank" rel="noopener">What I'm Listening to Now</a></li>
+  </ul>`
+const CONTACT = '<p>Feel free to reach out to me on <a href=https://www.linkedin.com/in/apullabhotla/>LinkedIn</a> to discuss the weirdest running routes in NYC, new card games, or any relevant opportunities!</p>'
+
 const CONTENT = {
-  about:      { title:'About Me',    html:'<p class="placeholder">[ Your content goes here ]</p>' },
-  experience: { title:'Experience',  html:'<p class="placeholder">[ Your content goes here ]</p>' },
-  projects:   { title:'Projects',    html:'<p class="placeholder">[ Your content goes here ]</p>' },
-  hobbies:    { title:'Hobbies',     html:'<p class="placeholder">[ Your content goes here ]</p>' },
-  links:      { title:'Links',       html:'<p class="placeholder">[ Your content goes here ]</p>' },
-  contact:    { title:'Contact',     html:'<p class="placeholder">[ Your content goes here ]</p>' },
+  about:      { title:'About Me',    html:ABOUT_ME },
+  experience: { title:'Experience',  html:EXPERIENCE },
+  projects:   { title:'Projects',    html:PROJECTS },
+  hobbies:    { title:'Hobbies',     html:HOBBIES },
+  links:      { title:'Links',       html:LINKS },
+  contact:    { title:'Contact',     html:CONTACT },
 };
 
 const CLR = { red:'#e03040', green:'#27ae66', purple:'#8b2fc9' };
