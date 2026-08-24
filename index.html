@@ -216,29 +216,69 @@
 </div>
 
 <script>
-const CARDS = [
-  { n:1, color:'red',    shape:'oval',     fill:'solid'   },  
-  { n:3, color:'purple', shape:'squiggle', fill:'solid'   },  
-  { n:2, color:'green',  shape:'diamond',  fill:'solid'   },  
-  { n:1, color:'purple', shape:'oval',     fill:'solid'   },  
-  { n:3, color:'purple', shape:'squiggle', fill:'striped' }, 
-  { n:1, color:'purple', shape:'squiggle', fill:'striped' },  
-  { n:2, color:'purple', shape:'squiggle', fill:'striped' },  
-  { n:3, color:'purple', shape:'squiggle', fill:'open'    },  
-  { n:2, color:'purple', shape:'squiggle', fill:'solid'   },  
-  { n:3, color:'green',  shape:'squiggle', fill:'solid'   },  
-  { n:3, color:'red',    shape:'oval',     fill:'striped' },  
-  { n:2, color:'red',    shape:'oval',     fill:'open'    },  
-];
+function generateDeck() {
+  const deck = [];
+  for (const n of [1,2,3])
+    for (const color of ['red','green','purple'])
+      for (const shape of ['oval','diamond','squiggle'])
+        for (const fill of ['solid','open','striped'])
+          deck.push({ n, color, shape, fill });
+  return deck;
+}
 
-const SETS = [
-  { key:'about',      indices:[0,1,2]   },
-  { key:'experience', indices:[4,5,6]   },
-  { key:'projects',   indices:[5,7,8]   },
-  { key:'hobbies',    indices:[2,6,11]  },
-  { key:'links',      indices:[0,10,11] },
-  { key:'contact',    indices:[1,4,7]   },
-];
+function shuffleArr(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function isSet(a, b, c) {
+  return ['n','color','shape','fill'].every(k => {
+    const s = new Set([a[k], b[k], c[k]]);
+    return s.size === 1 || s.size === 3;
+  });
+}
+
+function countSets(layout) {
+  let count = 0;
+  for (let i = 0; i < layout.length - 2; i++)
+    for (let j = i + 1; j < layout.length - 1; j++)
+      for (let k = j + 1; k < layout.length; k++)
+        if (isSet(layout[i], layout[j], layout[k])) count++;
+  return count;
+}
+
+function findAllSets(layout) {
+  const sets = [];
+  for (let i = 0; i < layout.length - 2; i++)
+    for (let j = i + 1; j < layout.length - 1; j++)
+      for (let k = j + 1; k < layout.length; k++)
+        if (isSet(layout[i], layout[j], layout[k]))
+          sets.push([i, j, k]);
+  return sets;
+}
+
+function generateLayout(shuffledDeck, currentLayout = [], startIndex = 0, targetCards = 12, targetSets = 6) {
+  const currentSetCount = countSets(currentLayout);
+  if (currentSetCount > targetSets) return null;
+  if (currentLayout.length === targetCards) {
+    return currentSetCount === targetSets ? [...currentLayout] : null;
+  }
+  for (let i = startIndex; i < shuffledDeck.length; i++) {
+    currentLayout.push(shuffledDeck[i]);
+    const result = generateLayout(shuffledDeck, currentLayout, i + 1, targetCards, targetSets);
+    if (result) return result;
+    currentLayout.pop();
+  }
+  return null;
+}
+
+const SECTION_KEYS = ['about','experience','projects','hobbies','links','contact'];
+const CARDS = generateLayout(shuffleArr(generateDeck()));
+const SETS = shuffleArr(findAllSets(CARDS)).map((indices, i) => ({ key: SECTION_KEYS[i], indices }));
 
 const ABOUT_ME = '<p>Hi! I\'m Anjali. Currently, I\'m a software engineer in NYC at Two Sigma where I create and maintain infrastructure for our data pipelines. In my free time, I enjoy grating cheese, running along the Brooklyn piers, and playing <i>SET!</i>, of course :)</p>'
 const EXPERIENCE = '<p>I studied Mathematics and Computer Science at the University of Chicago, and now take courses at Columbia at the School of Professional Studies. Previously, I interned at Fiserv, Amazon, and Two Sigma, before returning to the latter full-time.</p>'
